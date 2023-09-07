@@ -63,14 +63,14 @@ class LenderTestCase(TestCase):
         self.assertEqual(test_object.name, 'A'*1024)
 
     def test_over_length_name_not_allowed(self):
-        with self.assertRaises(DataError) as context:
+        with self.assertRaises(ValidationError) as context:
             test_object = Lender.objects.create(name='A'*2025,
                                   code='TAC',
                                   upfront_commission_rate=100,
                                   trial_commission_rate=200,
                                   active=False)
             test_object.full_clean()
-        self.assertTrue('Data too long' in str(context.exception))
+        self.assertTrue('Ensure this value has at most 1024 characters' in str(context.exception))
 
     def test_three_only_three_uppercase_alphebets_allowed_in_code(self):
         test_object = Lender.objects.create(name='Blah',
@@ -122,14 +122,14 @@ class LenderTestCase(TestCase):
         self.assertTrue('only capital alphabets [A-Z] are allowed' in str(context.exception))
 
     def test_no_more_than_three_characters_allowed_for_a_lender_code(self):
-        with self.assertRaises(DataError) as context:
+        with self.assertRaises(ValidationError) as context:
             test_object = Lender.objects.create(name='Blah',
                                                 code='TAFF',
                                                 upfront_commission_rate=100,
                                                 trial_commission_rate=200,
                                                 active=False)
             test_object.full_clean()
-        self.assertTrue('Data too long for column' in str(context.exception))
+        self.assertTrue('Ensure this value has at most 3 characters' in str(context.exception))
 
     def test_upfront_commission_rate_can_only_be_numerical(self):
         with self.assertRaises(ValueError) as context:
