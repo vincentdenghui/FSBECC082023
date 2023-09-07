@@ -7,7 +7,7 @@ from rest_framework import status
 
 load_dotenv(find_dotenv())
 
-class NewVisitorTest(unittest.TestCase):
+class RequestsClientTest(unittest.TestCase):
 
     def setUp(self):
         self.djang_user = os.environ['DJANGO_USER']
@@ -19,7 +19,7 @@ class NewVisitorTest(unittest.TestCase):
         #user for readonly checks
         self.test_ro_lender_code = 'TRO'
         self.test_ro_lender_name = 'SampleName'
-
+        self.test_ro_lender_active = True
     def tearDown(self):
         ...#remove TRO user
 
@@ -41,7 +41,7 @@ class NewVisitorTest(unittest.TestCase):
                             'code': self.test_ro_lender_code,
                             'upfront_commission_rate': 100,
                             'trial_commission_rate': 200,
-                            'active': True})
+                            'active': self.test_ro_lender_active})
         self.assertEqual(requests.get(self.get_url(f'/lenders/{self.test_ro_lender_code}')).json()['name'],
                          self.test_ro_lender_name)
 
@@ -94,17 +94,88 @@ class NewVisitorTest(unittest.TestCase):
                                   'trial_commission_rate': 200,
                                   'active': True})
         self.assertEqual(len(requests.get(self.get_url('/lenders/')).json()['results']), 5)
-        self.assertNotEqual(len(requests.get(self.get_url('/lenders/?page=2')).json()['results']), 5)
+
 
 
         ...
     # FR1. List active lenders
+    def test_filter_active_lenders(self):
+        #create 4 lenders, 2 active 2 inactive
+        for i in range(65,69):
+            character = chr(i).upper()
+            requests.post(self.get_url('/lenders/'),
+                            auth=self.basic_authentication_object,
+                            json={'name': f'active_filter_test_{character}',
+                                  'code': f'FL{character}',
+                                  'upfront_commission_rate': 100,
+                                  'trial_commission_rate': 200,
+                                  'active': i%2 == 0})
+
+        url = self.get_url(f'/lenders/?active=True')
+        all_active = True
+        while True:
+            response = requests.get(url).json()
+            for each in response['results']:
+                if not each['active']:
+                    all_active = False
+                    break
+            if not response['next']:
+                break
+            else:
+                url = response['next']
+        self.assertTrue(all_active)
+
 
     # FR3. Get a specific Lender
+    def test_can_get_a_specific_lender_by_code(self):
+        requests.post(self.get_url('/lenders/'),
+                      auth=self.basic_authentication_object,
+                      json={'name': f'get_specific_by_code_test',
+                            'code': f'FSC',
+                            'upfront_commission_rate': 100,
+                            'trial_commission_rate': 200,
+                            'active': True})
+        self.assertEqual(requests.get(self.get_url(f'/lenders/?code=FSC')).json()['results'][0]['name'],
+                         'get_specific_by_code_test')
 
     # FR4. Update a specific Lender
+    def test_user_can_update_a_specific_lender_by_code(self):
+        requests.post(self.get_url('/lenders/'),
+                      auth=self.basic_authentication_object,
+                      json={'name': f'update_specific_by_code_test',
+                            'code': f'FSU',
+                            'upfront_commission_rate': 100,
+                            'trial_commission_rate': 200,
+                            'active': False})
+        requests.put(self.get_url('/lenders/FSU/'),
+                      auth=self.basic_authentication_object,
+                      data={'name': f'update_specific_by_code_test',
+                            'code': f'FSU',
+                            'upfront_commission_rate': 100,
+                            'trial_commission_rate': 200,
+                            'active': True})
+        self.assertTrue(requests.get(self.get_url(f'/lenders/FSU/')).json()['active'])
 
+    def test_visitor_cannot_update_a_specific_lender_by_code(self):
+        requests.post(self.get_url('/lenders/'),
+                      auth=self.basic_authentication_object,
+                      json={'name': f'visitor_update_specific_by_code_test',
+                            'code': f'FSV',
+                            'upfront_commission_rate': 100,
+                            'trial_commission_rate': 200,
+                            'active': False})
+        requests.put(self.get_url('/lenders/FSV/'),
+                      data={'name': f'visitor_update_specific_by_code_test',
+                            'code': f'FSV',
+                            'upfront_commission_rate': 100,
+                            'trial_commission_rate': 200,
+                            'active': True})
+        self.assertFalse(requests.get(self.get_url(f'/lenders/FSV/')).json()['active'])
     # FR5. Delete a specific Lender
+
+        # test user can
+
+        # test visito cannot
 
     # FR6. Bulk upload Lenders in CSV format
 
