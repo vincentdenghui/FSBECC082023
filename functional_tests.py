@@ -16,8 +16,8 @@ class NewVisitorTest(unittest.TestCase):
     # FRi1. can visit the home page
     def test_can_visit_the_default_home_page(self):
         response = requests.get(self.get_url('/'))
-        assert response.status_code == 200
-        assert 'django' in response.content.decode('utf-8')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('lenders' in response.json())
 
     # FR1. Create a new Lender
 
