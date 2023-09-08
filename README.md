@@ -57,7 +57,7 @@ API Usage:
 (Example lender 'CBA')
 
 json payload format and limitations:
-
+```sh
 {
 name: str
 code: str
@@ -65,48 +65,58 @@ upfront_commission_rate: float
 trial_commission_rate: float
 active: boolean
 }
-
+```
 The value constraints of the payload can be found in the LenderFieldConstraints class located in /lenders/models.py.
 
 1. Create a new Lender (login required)
-  -POST /lenders/
-
-
+```sh
+-POST /lenders/
+```
+  
 2. List all Lenders (five per page)
+```sh
   -GET /lenders/
   -GET /lenders/?page=[1-inf)
-
+```
 3. List active lenders
+```sh
      -GET /lenders/?active=True (note: only 4 characters input which uppercase is 'TRUE' is deemed True, all other inputs are deemed False)
-
+```
 4. Get a specific Lender 
+```sh
 -GET /lenders/CBA/
 -GET /lenders/CBA/?format=api (human friendly)
 -GET /lenders/CBA/?format=json (machine friendly)
 -GET /lenders/CBA/?format=csv (all friendly)
-
+```
 5. Update a specific Lender (login required)
+```sh
 -PUT /lenders/CBA/
-
+```
 6. Delete a specific Lender (login required)
+```sh
 -DELETE /lenders/CBA/
-
+```
 7. Bulk upload Lenders in CSV format (login required) (this feature is not 100% RESTful)
+```sh
 -POST /csv-in-bulk/ (UTF-8 encoded bytes of a csv with a header)
-
+```
 8. Download Lenders in CSV format (login required) (this feature is not 100% RESTful)
+```sh
 -GET /csv-in-bulk/ (UTF-8 encoded bytes of a csv with a header)
-
+```
 Additional features:
 9. List options
+```sh
 -OPTIONS /lenders/ (list the operations supported by this set)
-
+```
 10. Ordering on 'created', 'code', 'upfront_commission_rate', 'trial_commission_rate','active'
+```sh
 -GET /lenders/?ordering=created (ascending order on created)
 -GET /lenders/?ordering=-created (descending order on created)
 -GET /lenders/?ordering=created,trial_commission_rate (ascending order on created then ascending order on trial_commission_rate)
 -GET /lenders/?ordering=created,-trial_commission_rate (ascending order on created then descending order on trial_commission_rate)
-
+```
 For more concrete examples, please have a look at the functional_test.py in the root directory.
 
 
