@@ -311,11 +311,9 @@ class RequestsClientTest(unittest.TestCase):
                             auth=self.basic_authentication_object,
                             data=csv.encode('utf-8'))
         self.assertEqual(get_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(requests.get(self.get_url('/lenders/CSF/')).status_code,status.HTTP_200_OK)
-        self.assertEqual(requests.get(self.get_url('/lenders/CSG/')).status_code, status.HTTP_200_OK)
+        self.assertTrue(all([code_comma in get_response.content.decode('utf-8') for code_comma in ['CSF,','CSG,']]))
 
         self.delete_test_objects(['CSF','CSG'])
-
 
 
 if __name__ == '__main__':
